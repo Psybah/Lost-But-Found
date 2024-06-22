@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="style/style.css">
+
+    <style type="text/css" media="print">
+        .noprint {
+            display: none
+        }
+        
+        .print {
+            display: block !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <header class="el-header noprint">
+            <div class="icon-btns">
+                <i class="icon-list" @click="changeLeftMenu"></i>
+                <i class="icon-skip_previous" v-bind:class="{'disabled': currentPage == 1}" @click="changeCurrentPage('first')"></i>
+                <i class="icon-play_arrow prev-icon" v-bind:class="{'disabled': currentPage == 1}" @click="changeCurrentPage('prev')"></i>
+                <i class="icon-play_arrow" v-bind:class="{'disabled': currentPage == pageNum}" @click="changeCurrentPage('next')"></i>
+                <i class="icon-skip_next" v-bind:class="{'disabled': currentPage == pageNum}" @click="changeCurrentPage('last')"></i>
+                <select v-model="currentPage">
+                    <option v-for="page in pageNum" v-bind:value="page">page {{ page }}</option>
+                </select>
+                <i class="icon-zoom_in" v-bind:class="{'disabled': zoomNum == 2}" @click="modifyZoom('in')"></i>
+                <select v-model="zoomNum">
+                    <option value="0.5">50%</option>
+                    <option value="0.6">60%</option>
+                    <option value="0.7">70%</option>
+                    <option value="0.8">80%</option>
+                    <option value="0.9">90%</option>
+                    <option value="1.0" selected>100%</option>
+                    <option value="1.1">110%</option>
+                    <option value="1.2">120%</option>
+                    <option value="1.3">130%</option>
+                    <option value="1.4">140%</option>
+                    <option value="1.5">150%</option>
+                    <option value="1.6">160%</option>
+                    <option value="1.7">170%</option>
+                    <option value="1.8">180%</option>
+                    <option value="1.9">190%</option>
+                    <option value="2.0">200%</option>
+                </select>
+                <i class="icon-zoom_out" v-bind:class="{'disabled': zoomNum == 0.5}" @click="modifyZoom('out')"></i>
+                <i class="icon-format_align_left" @click="textAlign = 'left'"></i>
+                <i class="icon-format_align_center" @click="textAlign = 'center'"></i>
+                <i class="icon-format_align_right" @click="textAlign = 'right'"></i>
+                <i class="icon-print" @click="window.print()"></i>
+            </div>
+        </header>
+
+        <aside class="noprint" width="240px" v-show="ifMenuShow">
+            <nav class="tabNav">
+                <ul>
+                    <li v-bind:class="{ 'curr': currentNav == 0 }" @click="currentNav = 0">Page</li>
+                    <li v-bind:class="{ 'curr': currentNav == 1 }" @click="currentNav = 1">Bookmark</li>
+                </ul>
+
+                <div class="clear"></div>
+            </nav>
+
+            <div class="tab-conent scrollbar" v-bind:style="{ height: asideHeight + 'px' }">
+
+            <section v-show="currentNav == 0">
+                <ul class="page-menu">
+                    <li v-for="page in pageNum" v-bind:class="{ 'curr': currentPage == page }" @click="changePage(page)"><i class="icon-file-text2"></i> page {{ page }}</li>
+                </ul>
+            </section>
+
+            <section v-show="currentNav == 1">
+                <ul class="page-menu">
+                    <li v-for="page in pageNum" v-bind:class="{ 'curr': currentPage == page }" @click="changePage(page)"><i class="icon-turned_in_not"></i> Bookmark {{ page }}</li>
+                </ul>
+            </section>
+        </div>
+
+        </aside>
+        <div class="main scrollbar noprint"  v-bind:style="{ height: mainHeight + 'px' }" v-bind:class="{ 'mainLeftM': ifMenuShow, 'aleft': textAlign === 'left','acenter': textAlign === 'center','aright': textAlign === 'right'}">
+            <div class="conent" v-html="pageContent" v-bind:style="zoomStyle"></div>
+
+            <div class="clear"></div>
+        </div>
+
+        <!--专门只为打印的内容-->
+        <div class="conent print" style="display:none" v-html="pageContent"></div>
+    </div>
+</body>
+<!-- 先引入 Vue -->
+<script src="js/vue.min.js"></script>
+<script>
+
+var app = new Vue({
+        el: '#app',
+        data: function() {
+            return {
+                // visible: false,
+                isCollapse: false,
+                currentNav: 0,
+                activeName2: 'first',
+                pageNum: 1, 
+                currentPage: 1,
+                pageContent: '',
+                asideHeight: 300,
+                mainHeight: 300,
+                ifMenuShow: true,
+                zoomNum: '1.0',
+                textAlign: 'left',
+                zoomStyle: {},
+                pageDatas: ['<div style="position:absolute;top:0.000000px;left:0.000000px"><nobr><img height="800.000000" width="1280.000000" src ="bgimg/bg00001.jpg"/></nobr></div>','<div style="position:absolute;top:0.000000px;left:0.000000px"><nobr><img height="800.000000" width="1280.000000" src ="bgimg/bg00002.jpg"/></nobr></div><p><span style="font-family:Poppins;font-size:13.995000px;font-style:normal;font-weight:normal;color:#F8F8F8;"><span style="position:absolute;top:50.231445px;left:426.853729px"><nobr>Home About Contact us FAQ </nobr></span></span></p><p><span style="font-family:Poppins;font-size:10.905000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:680.486389px;left:223.062622px"><nobr>Already Registered? Login </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-weight:bold;color:#FFFFFF;"><span style="position:absolute;top:614.484375px;left:278.671173px"><nobr>Sign Up </nobr></span></span></p><p><span style="font-family:Poppins;font-size:31.994999px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:187.166870px;left:235.844238px"><nobr>Sign Up </nobr></span></span></p><p><span style="font-family:Poppins;font-size:12.000000px;font-style:normal;font-weight:normal;color:#20232D;"><span style="position:absolute;top:312.613159px;left:169.892853px"><nobr>Name </nobr></span></span></p><p><span style="font-family:Poppins;font-size:12.000000px;font-style:normal;font-weight:normal;color:#20232D;"><span style="position:absolute;top:397.443085px;left:169.892853px"><nobr>Email </nobr></span></span></p><p><span style="font-family:Poppins;font-size:12.000000px;font-style:normal;font-weight:normal;color:#20232D;"><span style="position:absolute;top:482.042419px;left:169.892853px"><nobr>Password </nobr></span></span></p>','<div style="position:absolute;top:0.000000px;left:0.000000px"><nobr><img height="800.000000" width="1280.000000" src ="bgimg/bg00003.jpg"/></nobr></div><p><span style="font-family:Poppins;font-size:13.995000px;font-style:normal;font-weight:normal;color:#F8F8F8;"><span style="position:absolute;top:50.231445px;left:426.853729px"><nobr>Home About Contact us FAQ </nobr></span></span></p><p><span style="font-family:Poppins;font-size:10.905000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:680.486389px;left:215.500122px"><nobr>Haven’t Registered? Sign Up </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-weight:bold;color:#FFFFFF;"><span style="position:absolute;top:614.484375px;left:290.358673px"><nobr>Login </nobr></span></span></p><p><span style="font-family:Poppins;font-size:31.994999px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:187.166870px;left:257.500488px"><nobr>Login </nobr></span></span></p><p><span style="font-family:Poppins;font-size:12.000000px;font-style:normal;font-weight:normal;color:#20232D;"><span style="position:absolute;top:312.613159px;left:169.892853px"><nobr>Name </nobr></span></span></p><p><span style="font-family:Poppins;font-size:12.000000px;font-style:normal;font-weight:normal;color:#20232D;"><span style="position:absolute;top:397.443085px;left:169.892853px"><nobr>Email </nobr></span></span></p><p><span style="font-family:Poppins;font-size:12.000000px;font-style:normal;font-weight:normal;color:#20232D;"><span style="position:absolute;top:482.042419px;left:169.892853px"><nobr>Password </nobr></span></span></p>','<div style="position:absolute;top:0.000000px;left:0.000000px"><nobr><img height="800.000000" width="1280.000000" src ="bgimg/bg00004.jpg"/></nobr></div><p><span style="font-family:Poppins;font-size:15.000000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:49.824463px;left:1104.000000px"><nobr>Sign up </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.000000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:635.563904px;left:116.822128px"><nobr>Report a Found Item </nobr></span></span></p><p><span style="font-family:Poppins;font-size:24.000000px;font-weight:bold;color:#FFFFFF;"><span style="position:absolute;top:190.430496px;left:101.000000px"><nobr>Looking for something? </nobr></span></span></p><p><span style="font-family:Poppins;font-size:24.000000px;font-weight:bold;color:#FFFFFF;"><span style="position:absolute;top:228.430496px;left:101.000000px"><nobr>We’ve got you! </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.000000px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:49.824463px;left:506.062164px"><nobr>About Contact us FAQ </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:366.400726px;left:101.000000px"><nobr>Have you ever misplaced a valuable item or stumbled </nobr></span><span style="position:absolute;top:391.400726px;left:101.000000px"><nobr>upon something someone desperately needs? The </nobr></span><span style="position:absolute;top:416.400726px;left:101.000000px"><nobr>Lost and Found Portal connects you with what you\'ve </nobr></span><span style="position:absolute;top:441.400726px;left:101.000000px"><nobr>lost and reunites you with forgotten treasures. Report a </nobr></span><span style="position:absolute;top:466.400726px;left:101.000000px"><nobr>lost item, browse found items, and help build a </nobr></span><span style="position:absolute;top:491.400726px;left:101.000000px"><nobr>stronger community where nothing gets lost forever! </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:187.134033px;left:792.140503px"><nobr>Search lost Item </nobr></span></span></p>','<div style="position:absolute;top:0.000000px;left:0.000000px"><nobr><img height="800.000000" width="1280.000000" src ="bgimg/bg00005.jpg"/></nobr></div><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:264.630859px;left:138.815399px"><nobr>Item Category </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:italic;color:#EFEFEF;"><span style="position:absolute;top:370.961273px;left:145.812225px"><nobr>...detailed descrioption </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:264.630859px;left:494.997925px"><nobr>Location Date </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:264.638824px;left:869.657104px"><nobr>Upload Image </nobr></span></span></p><p><span style="font-family:Poppins;font-size:31.994999px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:140.180954px;left:91.272240px"><nobr>Report lost item </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:325.453247px;left:138.891907px"><nobr>Item Description </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:457.977417px;left:138.891907px"><nobr>Contact Information </nobr></span></span></p><p><span style="font-family:Poppins;font-size:12.000000px;font-style:normal;font-weight:normal;color:#20232D;"><span style="position:absolute;top:517.677490px;left:149.142731px"><nobr>Email Phone Number </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-weight:bold;color:#FFFFFF;"><span style="position:absolute;top:676.603516px;left:600.226868px"><nobr>Submit </nobr></span></span></p><p><span style="font-family:Poppins;font-size:13.995000px;font-style:normal;font-weight:normal;color:#F8F8F8;"><span style="position:absolute;top:50.231445px;left:426.853729px"><nobr>Home About Contact us FAQ </nobr></span></span></p>','<div style="position:absolute;top:0.000000px;left:0.000000px"><nobr><img height="800.000000" width="1280.000000" src ="bgimg/bg00006.jpg"/></nobr></div><p><span style="font-family:Poppins;font-size:13.995000px;font-style:normal;font-weight:normal;color:#F8F8F8;"><span style="position:absolute;top:50.231445px;left:426.853729px"><nobr>Home About Contact us FAQ </nobr></span></span></p><p><span style="font-family:Poppins;font-size:23.775002px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:589.573059px;left:546.263611px"><nobr>Report sent! </nobr></span></span></p>','<div style="position:absolute;top:0.000000px;left:0.000000px"><nobr><img height="800.000000" width="1280.000000" src ="bgimg/bg00007.jpg"/></nobr></div><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:64.103600px;left:211.659485px"><nobr>Search lost Item </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:174.824051px;left:396.945953px"><nobr>Category </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:254.464523px;left:401.242828px"><nobr>Location </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:334.104919px;left:421.352203px"><nobr>Date </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:412.725861px;left:1081.190674px"><nobr>Apply </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:412.725861px;left:936.193787px"><nobr>Cancel </nobr></span></span></p><p><span style="font-family:Poppins;font-size:12.000000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:178.104172px;left:586.414917px"><nobr>Electronics Luggage </nobr></span></span></p><p><span style="font-family:Poppins;font-size:12.000000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:258.060974px;left:596.571167px"><nobr>City State ...detailed address </nobr></span></span></p><p><span style="font-family:Poppins;font-size:12.000000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:337.701416px;left:590.369995px"><nobr>Month Date Time </nobr></span></span></p>','<div style="position:absolute;top:0.000000px;left:0.000000px"><nobr><img height="800.000000" width="1280.000000" src ="bgimg/bg00008.jpg"/></nobr></div><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:64.103600px;left:211.659485px"><nobr>wallet </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.000000px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:161.037796px;left:80.000000px"><nobr>*11 results </nobr></span></span></p><p><span style="font-family:Poppins;font-size:9.507114px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:569.622314px;left:670.067139px"><nobr>Black leather wallet, </nobr></span></span></p><p><span style="font-family:Poppins;font-size:9.507114px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:586.856628px;left:670.067139px"><nobr>Lost near Main Street and Elm </nobr></span><span style="position:absolute;top:604.091003px;left:670.067139px"><nobr>Street </nobr></span></span></p><p><span style="font-family:Poppins;font-size:9.507114px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:621.325317px;left:670.067139px"><nobr>On 06/18/2024. </nobr></span></span></p><p><span style="font-family:Poppins;font-size:9.507114px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:638.559692px;left:670.067139px"><nobr>Contains ID, credit cards, and cash. </nobr></span><span style="position:absolute;top:655.794006px;left:670.067139px"><nobr>Contact John Doe </nobr></span></span></p><p><span style="font-family:Poppins;font-size:9.507114px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:673.028320px;left:670.067139px"><nobr>(johndoe@email.com) </nobr></span></span></p>','<div style="position:absolute;top:0.000000px;left:0.000000px"><nobr><img height="800.000000" width="1280.000000" src ="bgimg/bg00009.jpg"/></nobr></div><p><span style="font-family:Poppins;font-size:9.507114px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:289.062988px;left:384.506775px"><nobr>Brown leather cardholder, </nobr></span></span></p><p><span style="font-family:Poppins;font-size:9.507114px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:306.297302px;left:384.506775px"><nobr>Lost at the Library on 06/15/2024. </nobr></span><span style="position:absolute;top:323.531647px;left:384.506775px"><nobr>Contains student ID and </nobr></span></span></p><p><span style="font-family:Poppins;font-size:9.507114px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:340.765991px;left:384.506775px"><nobr>librarycard. Contact Jane Smith </nobr></span></span></p><p><span style="font-family:Poppins;font-size:9.507114px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:358.000336px;left:384.506775px"><nobr>(janesmith@university.edu) </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-weight:bold;color:#FFFFFF;"><span style="position:absolute;top:618.729004px;left:547.962646px"><nobr>See More Results </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:64.103600px;left:211.659485px"><nobr>wallet </nobr></span></span></p>','<div style="position:absolute;top:0.000000px;left:0.000000px"><nobr><img height="800.000000" width="1280.000000" src ="bgimg/bg00010.jpg"/></nobr></div><p><span style="font-family:Poppins;font-size:23.775002px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:532.976990px;left:563.552002px"><nobr>No results </nobr></span></span></p><p><span style="font-family:Poppins;font-size:15.997499px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:64.103600px;left:211.659485px"><nobr>Car </nobr></span></span></p>']
+            }
+        },
+        mounted: function() {
+            this.$nextTick(function() {
+                this.pageNum = this.pageDatas.length;
+                this.pageContent = this.pageDatas[0];
+
+                this.setLeftMenuHeight();
+            })
+        },
+        watch: {
+            'currentPage': function(newVal, oldValue) {
+                // console.log('newVal ' + newVal, 'oldValue ' + oldValue);
+                if (newVal) {
+                    this.pageContent = this.pageDatas[this.currentPage - 1];
+                }
+            },
+            'zoomNum': function(newVal, oldValue) {
+                if (newVal) {
+                    this.zoomStyle = {
+                        'transform': 'scale(' + newVal + ')',
+                        '-webkit-transform': 'scale(' + newVal + ')',
+                        '-ms-transform': 'scale(' + newVal + ')',
+                        '-moz-transform': 'scale(' + newVal + ')',
+                        '-o-transform': 'scale(' + newVal + ')'
+                    }
+                }
+            }
+        },
+        methods: {
+            
+            changeCurrentPage: function(methods) {
+                switch (methods) {
+                    case 'first':
+                        this.currentPage = 1;
+                        break;
+                    case 'prev':
+                        if (this.currentPage > 1) {
+                            this.currentPage -= 1;
+                        }
+                        break;
+                    case 'next':
+                        if (this.currentPage < this.pageNum) {
+                            this.currentPage += 1;
+                        }
+                        break;
+                    case 'last':
+                        this.currentPage = this.pageNum;
+                        break;
+                }
+            },
+
+            gotoPage: function(page) {
+                console.log(page);
+                this.currentPage = page;
+            },
+            modifyZoom: function(type) {
+                switch (type) {
+                    case 'in':
+                        if (this.zoomNum < 2) {
+                            // this.zoomNum = (this.zoomNum + 0.1).toFixed(1);
+                            this.zoomNum = (parseFloat(this.zoomNum) + 0.1).toFixed(1);
+                        }
+                        break;
+                    case 'out':
+                        if (this.zoomNum > 0.5) {
+                            this.zoomNum = (parseFloat(this.zoomNum) - 0.1).toFixed(1);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                console.log(this.zoomNum);
+            },
+            setLeftMenuHeight: function() {
+                // this.asideHeight = document.body.scrollHeight - 60;
+                this.mainHeight = document.documentElement.clientHeight - 60 - 20;
+                // 60为头部导航高度， 46为menu高度， 40为上下padding
+                this.asideHeight = this.mainHeight - 20 - 46;
+            },
+            changePage: function(page) {
+                this.currentPage = page;
+                // this.pageContent = this.pageDatas[page - 1];
+            },
+            changeLeftMenu: function() {
+                this.ifMenuShow = !this.ifMenuShow;
+            }
+        }
+    });
+
+function gotoPage(page) {
+    console.log(page);
+    app.gotoPage(page);
+}
+
+</script>
+
+</html>
