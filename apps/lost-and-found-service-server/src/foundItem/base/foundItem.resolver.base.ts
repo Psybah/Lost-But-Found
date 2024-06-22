@@ -13,6 +13,14 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { GraphQLUpload } from "graphql-upload";
+import { FileUpload } from "src/storage/base/storage.types";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { FoundItem } from "./FoundItem";
 import { FoundItemCountArgs } from "./FoundItemCountArgs";
 import { FoundItemFindManyArgs } from "./FoundItemFindManyArgs";
@@ -22,11 +30,22 @@ import { UpdateFoundItemArgs } from "./UpdateFoundItemArgs";
 import { DeleteFoundItemArgs } from "./DeleteFoundItemArgs";
 import { User } from "../../user/base/User";
 import { FoundItemCreateInputDto } from "../FoundItemCreateInputDto";
+import { FoundItemWithValidationDto } from "../FoundItemWithValidationDto";
 import { FoundItemService } from "../foundItem.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => FoundItem)
 export class FoundItemResolverBase {
-  constructor(protected readonly service: FoundItemService) {}
+  constructor(
+    protected readonly service: FoundItemService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "FoundItem",
+    action: "read",
+    possession: "any",
+  })
   async _foundItemsMeta(
     @graphql.Args() args: FoundItemCountArgs
   ): Promise<MetaQueryPayload> {
@@ -36,14 +55,26 @@ export class FoundItemResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [FoundItem])
+  @nestAccessControl.UseRoles({
+    resource: "FoundItem",
+    action: "read",
+    possession: "any",
+  })
   async foundItems(
     @graphql.Args() args: FoundItemFindManyArgs
   ): Promise<FoundItem[]> {
     return this.service.foundItems(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => FoundItem, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "FoundItem",
+    action: "read",
+    possession: "own",
+  })
   async foundItem(
     @graphql.Args() args: FoundItemFindUniqueArgs
   ): Promise<FoundItem | null> {
@@ -54,7 +85,13 @@ export class FoundItemResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => FoundItem)
+  @nestAccessControl.UseRoles({
+    resource: "FoundItem",
+    action: "create",
+    possession: "any",
+  })
   async createFoundItem(
     @graphql.Args() args: CreateFoundItemArgs
   ): Promise<FoundItem> {
@@ -72,7 +109,13 @@ export class FoundItemResolverBase {
     });
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => FoundItem)
+  @nestAccessControl.UseRoles({
+    resource: "FoundItem",
+    action: "update",
+    possession: "any",
+  })
   async updateFoundItem(
     @graphql.Args() args: UpdateFoundItemArgs
   ): Promise<FoundItem | null> {
@@ -100,6 +143,11 @@ export class FoundItemResolverBase {
   }
 
   @graphql.Mutation(() => FoundItem)
+  @nestAccessControl.UseRoles({
+    resource: "FoundItem",
+    action: "delete",
+    possession: "any",
+  })
   async deleteFoundItem(
     @graphql.Args() args: DeleteFoundItemArgs
   ): Promise<FoundItem | null> {
@@ -115,9 +163,36 @@ export class FoundItemResolverBase {
     }
   }
 
+  @graphql.Mutation(() => FoundItem)
+  async uploadImage(
+    @graphql.Args({
+      name: "file",
+      type: () => GraphQLUpload,
+    })
+    file: FileUpload,
+    @graphql.Args()
+    args: FoundItemFindUniqueArgs
+  ): Promise<FoundItem> {
+    return await this.service.uploadImage(args, file);
+  }
+
+  @graphql.Mutation(() => FoundItem)
+  async deleteImage(
+    @graphql.Args()
+    args: FoundItemFindUniqueArgs
+  ): Promise<FoundItem> {
+    return await this.service.deleteImage(args);
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.ResolveField(() => User, {
     nullable: true,
     name: "user",
+  })
+  @nestAccessControl.UseRoles({
+    resource: "User",
+    action: "read",
+    possession: "any",
   })
   async getUser(@graphql.Parent() parent: FoundItem): Promise<User | null> {
     const result = await this.service.getUser(parent.id);
@@ -142,5 +217,13 @@ export class FoundItemResolverBase {
     args: FoundItemCreateInputDto
   ): Promise<FoundItemCreateInputDto> {
     return this.service.ReportFoundItemAction(args);
+  }
+
+  @graphql.Mutation(() => FoundItemWithValidationDto)
+  async ReportFoundItemWithValidation(
+    @graphql.Args()
+    args: FoundItemWithValidationDto
+  ): Promise<FoundItemWithValidationDto> {
+    return this.service.ReportFoundItemWithValidation(args);
   }
 }

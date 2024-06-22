@@ -16,18 +16,37 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { LostItemService } from "../lostItem.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { LostItemCreateInput } from "./LostItemCreateInput";
 import { LostItem } from "./LostItem";
 import { LostItemFindManyArgs } from "./LostItemFindManyArgs";
 import { LostItemWhereUniqueInput } from "./LostItemWhereUniqueInput";
 import { LostItemUpdateInput } from "./LostItemUpdateInput";
 import { LostItemCreateInputDto } from "../LostItemCreateInputDto";
+import { LostItemWithValidationDto } from "../LostItemWithValidationDto";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class LostItemControllerBase {
-  constructor(protected readonly service: LostItemService) {}
+  constructor(
+    protected readonly service: LostItemService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: LostItem })
+  @nestAccessControl.UseRoles({
+    resource: "LostItem",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createLostItem(
     @common.Body() data: LostItemCreateInput
   ): Promise<LostItem> {
@@ -60,9 +79,18 @@ export class LostItemControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [LostItem] })
   @ApiNestedQuery(LostItemFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "LostItem",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async lostItems(@common.Req() request: Request): Promise<LostItem[]> {
     const args = plainToClass(LostItemFindManyArgs, request.query);
     return this.service.lostItems({
@@ -86,9 +114,18 @@ export class LostItemControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: LostItem })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "LostItem",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async lostItem(
     @common.Param() params: LostItemWhereUniqueInput
   ): Promise<LostItem | null> {
@@ -119,9 +156,18 @@ export class LostItemControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: LostItem })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "LostItem",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateLostItem(
     @common.Param() params: LostItemWhereUniqueInput,
     @common.Body() data: LostItemUpdateInput
@@ -168,6 +214,14 @@ export class LostItemControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: LostItem })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "LostItem",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteLostItem(
     @common.Param() params: LostItemWhereUniqueInput
   ): Promise<LostItem | null> {
@@ -235,6 +289,23 @@ export class LostItemControllerBase {
     return this.service.ReportLostItemAction(body);
   }
 
+  @common.Post("/lost-items-v2")
+  @swagger.ApiOkResponse({
+    type: LostItemWithValidationDto,
+  })
+  @swagger.ApiNotFoundResponse({
+    type: errors.NotFoundException,
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
+  async ReportLostItemWithValidation(
+    @common.Body()
+    body: string
+  ): Promise<LostItemWithValidationDto> {
+    return this.service.ReportLostItemWithValidation(body);
+  }
+
   @common.Get("/:id/search-lost-items")
   @swagger.ApiOkResponse({
     type: String,
@@ -267,5 +338,22 @@ export class LostItemControllerBase {
     body: string
   ): Promise<LostItemCreateInputDto[]> {
     return this.service.SearchLostItemsAction(body);
+  }
+
+  @common.Get("/lost-items/search-v2")
+  @swagger.ApiOkResponse({
+    type: LostItemWithValidationDto,
+  })
+  @swagger.ApiNotFoundResponse({
+    type: errors.NotFoundException,
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
+  async SearchLostItemsWithValidation(
+    @common.Body()
+    body: string
+  ): Promise<LostItemWithValidationDto[]> {
+    return this.service.SearchLostItemsWithValidation(body);
   }
 }

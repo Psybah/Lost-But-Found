@@ -15,10 +15,18 @@ import {
   FoundItem as PrismaFoundItem,
   User as PrismaUser,
 } from "@prisma/client";
+import { LocalStorageService } from "src/storage/providers/local/local.storage.service";
+import { InputJsonValue } from "src/types";
+import { FileDownload, FileUpload } from "src/storage/base/storage.types";
+import { LocalStorageFile } from "src/storage/providers/local/local.storage.types";
 import { FoundItemCreateInputDto } from "../FoundItemCreateInputDto";
+import { FoundItemWithValidationDto } from "../FoundItemWithValidationDto";
 
 export class FoundItemServiceBase {
-  constructor(protected readonly prisma: PrismaService) {}
+  constructor(
+    protected readonly prisma: PrismaService,
+    protected readonly localStorageService: LocalStorageService
+  ) {}
 
   async count(
     args: Omit<Prisma.FoundItemCountArgs, "select">
@@ -52,6 +60,62 @@ export class FoundItemServiceBase {
     return this.prisma.foundItem.delete(args);
   }
 
+  async uploadImage<T extends Prisma.FoundItemFindUniqueArgs>(
+    args: Prisma.SelectSubset<T, Prisma.FoundItemFindUniqueArgs>,
+    file: FileUpload
+  ): Promise<PrismaFoundItem> {
+    file.filename = `profilePicture-${args.where.id}.${file.filename
+      .split(".")
+      .pop()}`;
+    const containerPath = "image";
+    const image = await this.localStorageService.uploadFile(
+      file,
+      [],
+      1000000,
+      containerPath
+    );
+
+    return await this.prisma.foundItem.update({
+      where: args.where,
+
+      data: {
+        image: image as InputJsonValue,
+      },
+    });
+  }
+
+  async downloadImage<T extends Prisma.FoundItemFindUniqueArgs>(
+    args: Prisma.SelectSubset<T, Prisma.FoundItemFindUniqueArgs>
+  ): Promise<FileDownload> {
+    const { image } = await this.prisma.foundItem.findUniqueOrThrow({
+      where: args.where,
+    });
+
+    return await this.localStorageService.downloadFile(
+      image as unknown as LocalStorageFile
+    );
+  }
+
+  async deleteImage<T extends Prisma.FoundItemFindUniqueArgs>(
+    args: Prisma.SelectSubset<T, Prisma.FoundItemFindUniqueArgs>
+  ): Promise<PrismaFoundItem> {
+    const { image } = await this.prisma.foundItem.findUniqueOrThrow({
+      where: args.where,
+    });
+
+    await this.localStorageService.deleteFile(
+      image as unknown as LocalStorageFile
+    );
+
+    return await this.prisma.foundItem.update({
+      where: args.where,
+
+      data: {
+        image: Prisma.DbNull,
+      },
+    });
+  }
+
   async getUser(parentId: string): Promise<PrismaUser | null> {
     return this.prisma.foundItem
       .findUnique({
@@ -65,6 +129,11 @@ export class FoundItemServiceBase {
   async ReportFoundItemAction(
     args: FoundItemCreateInputDto
   ): Promise<FoundItemCreateInputDto> {
+    throw new Error("Not implemented");
+  }
+  async ReportFoundItemWithValidation(
+    args: FoundItemWithValidationDto
+  ): Promise<FoundItemWithValidationDto> {
     throw new Error("Not implemented");
   }
 }

@@ -16,6 +16,7 @@ import {
   User as PrismaUser,
 } from "@prisma/client";
 import { LostItemCreateInputDto } from "../LostItemCreateInputDto";
+import { LostItemWithValidationDto } from "../LostItemWithValidationDto";
 
 export class LostItemServiceBase {
   constructor(protected readonly prisma: PrismaService) {}
@@ -65,10 +66,20 @@ export class LostItemServiceBase {
   ): Promise<LostItemCreateInputDto> {
     throw new Error("Not implemented");
   }
+  async ReportLostItemWithValidation(
+    args: LostItemWithValidationDto
+  ): Promise<LostItemWithValidationDto> {
+    throw new Error("Not implemented");
+  }
   async SearchLostItems(args: string): Promise<string> {
     throw new Error("Not implemented");
   }
   async SearchLostItemsAction(args: string): Promise<LostItemCreateInputDto[]> {
+    throw new Error("Not implemented");
+  }
+  async SearchLostItemsWithValidation(
+    args: string
+  ): Promise<LostItemWithValidationDto[]> {
     throw new Error("Not implemented");
   }
 }

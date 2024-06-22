@@ -13,6 +13,12 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { LostItem } from "./LostItem";
 import { LostItemCountArgs } from "./LostItemCountArgs";
 import { LostItemFindManyArgs } from "./LostItemFindManyArgs";
@@ -22,11 +28,22 @@ import { UpdateLostItemArgs } from "./UpdateLostItemArgs";
 import { DeleteLostItemArgs } from "./DeleteLostItemArgs";
 import { User } from "../../user/base/User";
 import { LostItemCreateInputDto } from "../LostItemCreateInputDto";
+import { LostItemWithValidationDto } from "../LostItemWithValidationDto";
 import { LostItemService } from "../lostItem.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => LostItem)
 export class LostItemResolverBase {
-  constructor(protected readonly service: LostItemService) {}
+  constructor(
+    protected readonly service: LostItemService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "LostItem",
+    action: "read",
+    possession: "any",
+  })
   async _lostItemsMeta(
     @graphql.Args() args: LostItemCountArgs
   ): Promise<MetaQueryPayload> {
@@ -36,14 +53,26 @@ export class LostItemResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [LostItem])
+  @nestAccessControl.UseRoles({
+    resource: "LostItem",
+    action: "read",
+    possession: "any",
+  })
   async lostItems(
     @graphql.Args() args: LostItemFindManyArgs
   ): Promise<LostItem[]> {
     return this.service.lostItems(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => LostItem, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "LostItem",
+    action: "read",
+    possession: "own",
+  })
   async lostItem(
     @graphql.Args() args: LostItemFindUniqueArgs
   ): Promise<LostItem | null> {
@@ -54,7 +83,13 @@ export class LostItemResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => LostItem)
+  @nestAccessControl.UseRoles({
+    resource: "LostItem",
+    action: "create",
+    possession: "any",
+  })
   async createLostItem(
     @graphql.Args() args: CreateLostItemArgs
   ): Promise<LostItem> {
@@ -72,7 +107,13 @@ export class LostItemResolverBase {
     });
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => LostItem)
+  @nestAccessControl.UseRoles({
+    resource: "LostItem",
+    action: "update",
+    possession: "any",
+  })
   async updateLostItem(
     @graphql.Args() args: UpdateLostItemArgs
   ): Promise<LostItem | null> {
@@ -100,6 +141,11 @@ export class LostItemResolverBase {
   }
 
   @graphql.Mutation(() => LostItem)
+  @nestAccessControl.UseRoles({
+    resource: "LostItem",
+    action: "delete",
+    possession: "any",
+  })
   async deleteLostItem(
     @graphql.Args() args: DeleteLostItemArgs
   ): Promise<LostItem | null> {
@@ -115,9 +161,15 @@ export class LostItemResolverBase {
     }
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.ResolveField(() => User, {
     nullable: true,
     name: "user",
+  })
+  @nestAccessControl.UseRoles({
+    resource: "User",
+    action: "read",
+    possession: "any",
   })
   async getUser(@graphql.Parent() parent: LostItem): Promise<User | null> {
     const result = await this.service.getUser(parent.id);
@@ -144,6 +196,14 @@ export class LostItemResolverBase {
     return this.service.ReportLostItemAction(args);
   }
 
+  @graphql.Mutation(() => LostItemWithValidationDto)
+  async ReportLostItemWithValidation(
+    @graphql.Args()
+    args: LostItemWithValidationDto
+  ): Promise<LostItemWithValidationDto> {
+    return this.service.ReportLostItemWithValidation(args);
+  }
+
   @graphql.Query(() => String)
   async SearchLostItems(
     @graphql.Args()
@@ -158,5 +218,13 @@ export class LostItemResolverBase {
     args: string
   ): Promise<LostItemCreateInputDto[]> {
     return this.service.SearchLostItemsAction(args);
+  }
+
+  @graphql.Query(() => [LostItemWithValidationDto])
+  async SearchLostItemsWithValidation(
+    @graphql.Args()
+    args: string
+  ): Promise<LostItemWithValidationDto[]> {
+    return this.service.SearchLostItemsWithValidation(args);
   }
 }
