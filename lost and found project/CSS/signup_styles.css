@@ -45,7 +45,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: url('../lost and found project/signup_page.jpg');
+    background-image: url('../Images/signup_page.jpg');
     background-size: cover;
     background-position: center;
   }
