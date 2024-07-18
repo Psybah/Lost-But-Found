@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='homepage_styles.css') }}">
+</head>
+<body>
+    <header>
+        <div class="logo"><img src="{{ url_for('static', filename='Images/Logo.jpg') }}" width="140" height="40" alt="welcome logo"></div>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
+                <li><a href="{{ url_for('contact') }}">Contact us</a></li>
+                <li><a href="{{ url_for('faq') }}">FAQ</a></li>
+                <li><a href="{{ url_for('signup') }}" class="signup-btn">Sign up →</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main class="home-page">
+        <div class="intro">
+            <div class="intro-text">
+                <h1>Welcome to Lost and Found</h1>
+                <p>ave you ever misplaced a valuable item or stumbled upon something someone desperately needs? 
+                    The Lost and Found Portal connects you with what you've lost and reunites you with forgotten treasures. 
+                    Report a lost item, browse found items, and help build a stronger community where nothing gets lost forever!
+</p>
+                <a href="{{ url_for('report') }}" class="report-btn">Report Lost Item</a>
+            </div>
+            <div class="intro-search">
+                <input type="text" placeholder="Search lost items...">
+                <button class="search-btn">🔍</button>
+            </div>
+            <div class="intro-image">
+                <img src="{{ url_for('static', filename='Images/home_page.jpg') }}" alt="Lost and Found">
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+
