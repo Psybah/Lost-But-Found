@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost Items Search</title>
+    <link rel="stylesheet" href="../CSS/search_lost_items.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="../Images/Logo.jpg" width="140" height="40" alt="welcome logo">
+        </div>
+        <div class="search-bar">
+            <form action="/search" method="post">
+                <input type="text" name="search_term" placeholder="Search lost item">
+                <button type="submit" class="search-btn"><img src="../Images/search_icon.png" alt="Search"></button>
+            </form>
+        </div>
+        <div class="filter-icon">
+            <img src="../Images/filter-icon.png" alt="Filter">
+        </div>
+    </header>
+    <div class="filter-form">
+        <form action="/filter" method="post">
+            <div class="form-group">
+                <label for="category">Category</label>
+                <div class="categories">
+                    <input type="radio" id="electronics" name="category" value="Electronics">
+                    <label for="electronics">Electronics</label>
+                    <input type="radio" id="luggage" name="category" value="Luggage">
+                    <label for="luggage">Luggage</label>
+                    <input type="radio" id="others" name="category" value="Others">
+                    <label for="others">Others</label>
+                    <button type="button" class="add-category">+</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" name="city" placeholder="City">
+                <input type="text" name="state" placeholder="State">
+                <input type="text" name="detailed_address" placeholder="Detailed address">
+            </div>
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="text" name="month" placeholder="Month">
+                <input type="text" name="date" placeholder="Date">
+                <input type="text" name="time" placeholder="Time">
+            </div>
+            <div class="form-actions">
+                <button type="button" class="cancel-btn">Cancel</button>
+                <button type="submit" class="apply-btn">Apply</button>
+            </div>
+        </form>
+    </div>
+    <div class="results">
+        <div class="result-item">
+            <a href="#">Link 1</a>
+        </div>
+        <div class="result-item">
+            <a href="#">Link 2</a>
+        </div>
+        <div class="result-item">
+            <a href="#">Link 3</a>
+        </div>
+        <div class="result-item">
+            <a href="#">Link 4</a>
+        </div>
+        <div class="result-item">
+            <a href="#">Link 5</a>
+        </div>
+        <div class="result-item">
+            <a href="#">Link 6</a>
+        </div>
+    </div>
+</body>
+</html> 

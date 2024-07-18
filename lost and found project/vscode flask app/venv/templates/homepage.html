@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="../static/homepage_styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="../static/Images/Logo.jpg" width="140" height="40" alt="welcome logo">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/contact">Contact us</a></li>
+                <li><a href="/faq">FAQ</a></li>
+                <li><a href="/signup" class="signup-btn">Sign up →</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main class="home-page">
+        <section class="intro">
+            <div class="intro-text">
+                <h1>Looking for something?<br>We've got you!</h1>
+                <p>
+                    Have you ever misplaced a valuable item or stumbled upon something someone desperately needs? 
+                    The Lost and Found Portal connects you with what you've lost and reunites you with forgotten treasures. 
+                    Report a lost item, browse found items, and help build a stronger community where nothing gets lost forever!
+                </p>
+                <button class="report-btn" onclick="window.location.href='/report'">Report a Found Item →</button>
+            </div>
+            <div class="intro-search">
+                <form action="/search" method="post">
+                    <input type="text" name="search_term" placeholder="Search lost Item">
+                    <button type="submit" class="search-btn"><span>🔍</span></button>
+                </form>
+            </div>
+            <div class="intro-image">
+                <img src="../static/Images/home_page.jpg" alt="Person searching">
+            </div>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Lost Item</title>
+    <link rel="stylesheet" href="../CSS/report_lost_items.css">
+</head>
+<body>
+    <header>
+        <div class="logo"><img src="../Images/Logo.jpg" width="140" height="40" alt="welcome logo"></div>
+        <nav>
+            <ul>
+                <li><a href="homepage.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact us</a></li>
+                <li><a href="faq.html">FAQ</a></li>
+                <li><a href="signup.html" class="signup-btn">Sign up →</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div class="report-lost-item-container">
+            <h2>Report lost item</h2>
+            <form method="POST" action="/report" enctype="multipart/form-data">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item-category">Item Category</label>
+                        <select id="item-category" name="item_category">
+                            <option value="" disabled selected>Select Category</option>
+                            <!-- Add categories here -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <select id="location" name="location">
+                            <option value="" disabled selected>Select Location</option>
+                            <!-- Add locations here -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" name="date">
+                    </div>
+                    <div class="form-group">
+                        <label for="upload-image">Upload Image</label>
+                        <button type="button" id="upload-image-button" class="upload-button">Upload Image</button>
+                        <input type="file" id="upload-image" name="upload_image" class="upload-button" accept="image/*" style="display: none;">
+                    </div>
+                    <script>
+                        document.getElementById('upload-image-button').addEventListener('click', function() {
+                            var fileInput = document.getElementById('upload-image');
+                            fileInput.style.display = fileInput.style.display === 'none' ? 'block' : 'none';
+                        });
+                    </script>
+                </div>
+                <div class="form-group">
+                    <label for="item-description">Item Description</label>
+                    <textarea id="item-description" name="item_description" placeholder="...detailed description"></textarea>
+                </div>
+                <div class="form-group">
+                    <h3>Contact Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="Email">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone-number">Phone Number</label>
+                            <input type="tel" id="phone-number" name="phone_number" placeholder="Phone Number">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="submit-button">Submit</button>
+            </form>
+        </div>
+    </main>
+</body>
+</html>
